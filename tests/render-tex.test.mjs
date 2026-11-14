@@ -13,6 +13,15 @@ const RENDERER = fileURLToPath(new URL('../bin/render.mjs', import.meta.url))
 // The math fallback fonts bin/render.mjs looks for.
 const MATH_FONTS = ['/System/Library/Fonts/Supplemental/STIXTwoMath.otf', '/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf']
 const hasMathFont = MATH_FONTS.some(file => fs.existsSync(file))
+// The text fallback fonts bin/render.mjs looks for.
+const TEXT_FONTS = [
+  '/System/Library/Fonts/AppleSDGothicNeo.ttc',
+  '/System/Library/Fonts/Hiragino Sans GB.ttc',
+  '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+  '/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc',
+  '/usr/share/fonts/google-noto-cjk/NotoSansCJK-Regular.ttc',
+]
+const hasTextFont = TEXT_FONTS.some(file => fs.existsSync(file))
 const STYLE = {
   rowPx: 64,
   cellRatio: 2.125,
@@ -86,4 +95,12 @@ test('a letter the MathJax font lacks is drawn from a math font, not as a missin
   const nothing = String.fromCodePoint(0x10fffd)
   const results = render([['indicator', '\\mathbb{1}'], ['missing', nothing]])
   assert.ok(!pictureOf(results.get('indicator'), '\\mathbb{1}').equals(pictureOf(results.get('missing'), 'U+10FFFD')), 'the double-struck one is drawn as the missing-glyph box')
+})
+
+test('a CJK character the first text font lacks is drawn from another text font, not as a missing-glyph box', { skip: !hasTextFont && 'No text fallback font is installed' }, () => {
+  // U+2FFFD is unassigned, so no font has it, and MathJax gives it the same
+  // width as 这, a simplified Chinese character Apple SD Gothic Neo lacks.
+  const nothing = String.fromCodePoint(0x2fffd)
+  const results = render([['simplified', '\\text{这}'], ['missing', `\\text{${nothing}}`]])
+  assert.ok(!pictureOf(results.get('simplified'), '\\text{这}').equals(pictureOf(results.get('missing'), 'U+2FFFD')), '这 is drawn as the missing-glyph box')
 })

@@ -7,7 +7,7 @@ import { readTips, type Tipped } from './tips'
 import { plainOf, unicodeMath } from './unicode'
 
 // Part of every cache key: bump it when bin/render.mjs draws differently.
-const VERSION = 10
+const VERSION = 11
 // Pixels per terminal row in the pictures; the terminal scales each picture
 // to its cells, so this only sets how sharp they are.
 const ROW_PX = 64

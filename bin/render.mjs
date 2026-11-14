@@ -23,7 +23,10 @@ const MathJax = require('mathjax')
 const { Resvg } = require('@resvg/resvg-js')
 
 // Fonts for text MathJax has no glyph for, such as Hangul or kana inside
-// \text{}: the first one this machine has, else every system font.
+// \text{}: every one this machine has, else every system font. resvg draws
+// text in the first and takes a glyph it lacks from the others, so simplified
+// Chinese such as 这, which Apple SD Gothic Neo lacks, comes from Hiragino
+// Sans GB instead of drawing as a missing-glyph box.
 const TEXT_FONTS = [
   ['/System/Library/Fonts/AppleSDGothicNeo.ttc', 'Apple SD Gothic Neo'],
   ['/System/Library/Fonts/Hiragino Sans GB.ttc', 'Hiragino Sans GB'],
@@ -31,10 +34,10 @@ const TEXT_FONTS = [
   ['/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc', 'Noto Sans CJK KR'],
   ['/usr/share/fonts/google-noto-cjk/NotoSansCJK-Regular.ttc', 'Noto Sans CJK KR'],
 ]
-const textFont = TEXT_FONTS.find(([file]) => fs.existsSync(file))
+const textFonts = TEXT_FONTS.filter(([file]) => fs.existsSync(file))
 // A font for math letters the MathJax font has no glyph for, such as the 𝟙
 // of \mathbb{1}, which would otherwise come out as a missing-glyph box: the
-// first one this machine has, used where the text font lacks a glyph.
+// first one this machine has, used where the text fonts lack a glyph.
 const MATH_FONTS = ['/System/Library/Fonts/Supplemental/STIXTwoMath.otf', '/usr/share/fonts/truetype/noto/NotoSansMath-Regular.ttf']
 const mathFont = MATH_FONTS.find(file => fs.existsSync(file))
 
@@ -200,9 +203,9 @@ async function render(item) {
   const hasText = hasTextContent(mathSvg)
   let font = { loadSystemFonts: false }
   if (hasText) {
-    const [file, family] = textFont ?? [undefined, undefined]
-    font = file
-      ? { loadSystemFonts: false, fontFiles: [file, mathFont].filter(Boolean), defaultFontFamily: family, serifFamily: family, sansSerifFamily: family }
+    const family = textFonts[0]?.[1]
+    font = family
+      ? { loadSystemFonts: false, fontFiles: [...textFonts.map(([file]) => file), mathFont].filter(Boolean), defaultFontFamily: family, serifFamily: family, sansSerifFamily: family }
       : { loadSystemFonts: true }
   }
 

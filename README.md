@@ -35,7 +35,7 @@ The plugin adds a short section to Claude's system prompt, only in sessions wher
 - Inline math goes between single dollars: `$x^2$`. Put no space right after the opening `$` or right before the closing one, so `$20 and $30` stays text.
 - Display math goes between double dollars in a paragraph of its own, with blank lines before and after.
 - Math is drawn as pictures in paragraphs and list items. Math inside tables, headings and block quotes, where a picture can't go, is written as Unicode text. Math inside code spans and code blocks is left as written.
-- `\(...\)` and `\[...\]` work too. MathJax supports the AMS environments (`aligned`, `cases`, `pmatrix`, ...), and `\text{}` takes any script, including Hangul and kana.
+- `\(...\)` and `\[...\]` work too. MathJax supports the AMS environments (`aligned`, `cases`, `pmatrix`, ...), and `\text{}` takes any script, including Hangul, kana and simplified Chinese.
 - Commands MathJax lacks are drawn too: `\argmax`, `\argmin`, `\E`, `\R` and the other blackboard letters, `\norm{}`, `\abs{}`, `\bm{}`, `\mathds{}`, `\1` and `\coloneqq` as usual, and any other unknown command, such as `\softplus`, as its name, the way `\operatorname` draws one.
 - `\texttip{part}{explanation}` and `\mathtip{part}{formula}` put an explanation on part of a formula, shown when the pointer rests on it (see [Tooltips](#tooltips)).
 
