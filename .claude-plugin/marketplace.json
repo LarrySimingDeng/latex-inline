@@ -2,8 +2,8 @@
   "name": "latex-inline",
   "description": "LaTeX Inline: typeset math in Claude Code replies, as pictures in Ghostty, cmux and kitty and as Unicode text in other terminals",
   "owner": {
-    "name": "dazebug",
-    "url": "https://github.com/dazebug"
+    "name": "Siming Deng",
+    "url": "https://github.com/LarrySimingDeng"
   },
   "plugins": [
     {

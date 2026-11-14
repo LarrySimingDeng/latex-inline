@@ -1,17 +1,17 @@
 {
   "name": "latex-inline",
   "displayName": "LaTeX Inline",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Shows the LaTeX math in Claude's replies typeset: as pictures inline with the text in Ghostty, cmux and kitty, and as Unicode text in other terminals",
   "author": {
-    "name": "dazebug",
-    "url": "https://github.com/dazebug"
+    "name": "Siming Deng",
+    "url": "https://github.com/LarrySimingDeng"
   },
-  "homepage": "https://github.com/dazebug/latex-inline",
-  "repository": "https://github.com/dazebug/latex-inline",
-  "documentationUrl": "https://github.com/dazebug/latex-inline#readme",
-  "supportUrl": "https://github.com/dazebug/latex-inline/issues",
-  "privacyPolicyUrl": "https://github.com/dazebug/latex-inline#privacy",
+  "homepage": "https://github.com/LarrySimingDeng/latex-inline",
+  "repository": "https://github.com/LarrySimingDeng/latex-inline",
+  "documentationUrl": "https://github.com/LarrySimingDeng/latex-inline#readme",
+  "supportUrl": "https://github.com/LarrySimingDeng/latex-inline/issues",
+  "privacyPolicyUrl": "https://github.com/LarrySimingDeng/latex-inline#privacy",
   "license": "MIT",
   "keywords": [
     "latex",

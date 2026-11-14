@@ -22,7 +22,7 @@ The Unicode text needs nothing beyond Claude Code. In the Desktop app, VS Code a
 ## Install
 
 ```bash
-claude plugin marketplace add dazebug/latex-inline
+claude plugin marketplace add LarrySimingDeng/latex-inline
 claude plugin install latex-inline@latex-inline
 ```
 
@@ -165,6 +165,7 @@ Load your clone for one session with `claude --plugin-dir ./latex-inline`; Claud
 
 ## Acknowledgements
 
+- This plugin is based on [LaTeX Inline](https://github.com/dazebug/latex-inline) by dazebug (MIT).
 - The cache file names come from [cyrb53](https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js), bryc's public-domain string hash.
 - The terminal cell is measured the way [Ghostty](https://github.com/ghostty-org/ghostty) (MIT) computes it in `src/font/Metrics.zig`.
 - Formulas are laid out by [MathJax](https://www.mathjax.org/) in the [Fira Math](https://github.com/firamath/firamath) font and rasterized by [resvg](https://github.com/RazrFalcon/resvg).
