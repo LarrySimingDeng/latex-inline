@@ -1,0 +1,103 @@
+{
+  "name": "latex-inline",
+  "displayName": "LaTeX Inline",
+  "version": "0.5.1",
+  "description": "Shows the LaTeX math in Claude's replies typeset: as pictures inline with the text in Ghostty, cmux and kitty, and as Unicode text in other terminals",
+  "author": {
+    "name": "dazebug",
+    "url": "https://github.com/dazebug"
+  },
+  "homepage": "https://github.com/dazebug/latex-inline",
+  "repository": "https://github.com/dazebug/latex-inline",
+  "documentationUrl": "https://github.com/dazebug/latex-inline#readme",
+  "supportUrl": "https://github.com/dazebug/latex-inline/issues",
+  "privacyPolicyUrl": "https://github.com/dazebug/latex-inline#privacy",
+  "license": "MIT",
+  "keywords": [
+    "latex",
+    "math",
+    "mathjax",
+    "terminal",
+    "ghostty",
+    "kitty",
+    "mod"
+  ],
+  "userConfig": {
+    "mode": {
+      "type": "string",
+      "title": "How to show math",
+      "description": "auto (the default) draws pictures in terminals that show kitty-graphics pictures (Ghostty, cmux, kitty; not inside tmux) and writes Unicode text elsewhere. on always draws pictures, text always writes Unicode, off leaves the LaTeX as written.",
+      "default": "auto"
+    },
+    "teach_claude": {
+      "type": "boolean",
+      "title": "Tell Claude to write math in LaTeX",
+      "description": "Adds a short section to the system prompt, only where math is drawn as pictures, asking Claude to write formulas as $...$ and $$...$$.",
+      "default": true
+    },
+    "copy_latex": {
+      "type": "boolean",
+      "title": "Copy formulas as LaTeX",
+      "description": "When you select part of a reply with the mouse in fullscreen mode, the copy Claude Code makes gets each formula drawn as a picture as its LaTeX ($...$, $$...$$) in place of the picture's placeholder characters. To tell that copy from one another program made, the plugin reads the clipboard with pbpaste (wl-paste, xclip or xsel on Linux) for up to a minute after such a selection.",
+      "default": true
+    },
+    "node_path": {
+      "type": "string",
+      "title": "Node.js executable",
+      "description": "The node that runs the renderer, as a command on PATH or an absolute path.",
+      "default": "node"
+    },
+    "font_metrics": {
+      "type": "string",
+      "title": "Terminal font geometry",
+      "description": "auto (the default) reads your terminal's font from its config (Ghostty, cmux, kitty) and works out the three numbers below the way the terminal does; they apply only when that fails. manual always uses them.",
+      "default": "auto"
+    },
+    "cell_aspect": {
+      "type": "number",
+      "title": "Cell height over width",
+      "description": "Your terminal cell's height divided by its width, in pixels. 2.125 is Ghostty's default font, JetBrains Mono at 13pt; Fira Code at 12pt on a Retina display is 2.0. Formulas look stretched when it is off.",
+      "default": 2.125,
+      "min": 1,
+      "max": 4
+    },
+    "baseline": {
+      "type": "number",
+      "title": "Baseline position",
+      "description": "Where the text baseline sits in a cell, as a fraction of the cell height from the top: 0.765 for JetBrains Mono at 13pt, 0.767 for Fira Code at 12pt.",
+      "default": 0.765,
+      "min": 0.5,
+      "max": 0.95
+    },
+    "line_height": {
+      "type": "number",
+      "title": "Cell height in ems",
+      "description": "The cell height in ems of your terminal font: 1.308 for JetBrains Mono at 13pt, 1.25 for Fira Code at 12pt.",
+      "default": 1.308,
+      "min": 1,
+      "max": 2
+    },
+    "math_scale": {
+      "type": "number",
+      "title": "Inline math size",
+      "description": "Inline formula size in ems of your terminal font. Formulas taller than a row take three rows instead of shrinking.",
+      "default": 1.62,
+      "min": 0.5,
+      "max": 4
+    },
+    "display_scale": {
+      "type": "number",
+      "title": "Display math size",
+      "description": "Display formula ($$...$$) size in ems of your terminal font.",
+      "default": 2.18,
+      "min": 0.5,
+      "max": 6
+    },
+    "color": {
+      "type": "string",
+      "title": "Math color",
+      "description": "auto follows Claude Code's theme; or a #rrggbb color.",
+      "default": "auto"
+    }
+  }
+}

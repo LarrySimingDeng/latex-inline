@@ -1,0 +1,174 @@
+# LaTeX Inline
+
+LaTeX Inline typesets the math in Claude's replies right inside your terminal. When Claude writes `$e^{i\pi} + 1 = 0$` in the middle of a sentence, you see the typeset formula in that sentence, at the size of the text around it, instead of the raw source. Display math (`$$...$$`) is drawn centered on its own lines. In terminals that can't show pictures, the same math is written as Unicode text instead: `e^(iπ) + 1 = 0`, `x = (−b ± √(b² − 4ac))/2a`. It is a Claude Code [mod](https://code.claude.com/docs/en/plugins/mods/overview): it redraws each reply that contains math and leaves every other reply to Claude Code.
+
+![A Claude Code session in Ghostty answering "Show me a few famous formulas": Euler's identity, the Gaussian integral, the Basel problem and the golden ratio inline in the text, the Fourier transform and Maxwell's equations as display math, Bayes' theorem, softmax and the Cauchy–Schwarz inequality in a list, Stirling's formula and a determinant inline, and four more formulas in a table, written as Unicode text](docs/screenshot.png)
+
+*Ghostty with its default font (JetBrains Mono, 13pt) and the plugin's default settings.*
+
+Formulas are laid out by [MathJax](https://www.mathjax.org/) with the Fira Math font and drawn through the kitty graphics protocol, so pictures need a terminal that shows them that way: [Ghostty](https://ghostty.org/), cmux (built on Ghostty) or [kitty](https://sw.kovidgoyal.net/kitty/). Everywhere else, including iTerm2, WezTerm, Terminal.app and anything inside tmux, you get the Unicode text.
+
+It works beside [Mermaid Inline](https://github.com/dazebug/mermaid-inline): in a reply that holds both math and diagrams, each plugin draws its own part, whichever runs first. Use Mermaid Inline 0.1.1 or later with it, so the two leave the same blank rows between their parts.
+
+## Requirements
+
+- Claude Code 2.1.287 or later, in a terminal session
+- For pictures: Ghostty, cmux or kitty, not inside tmux, which does not pass the pictures through; and Node.js 18 or later with npm on your `PATH`: Claude Code uses npm to install the renderer's packages when it installs the plugin, and the plugin runs its renderer with `node`
+- For [tooltips](#tooltips): Claude Code 2.1.296 or later in fullscreen mode (`"tui": "fullscreen"`), whose hover shows their cards
+- macOS or Linux
+
+The Unicode text needs nothing beyond Claude Code. In the Desktop app, VS Code and `claude -p`, the plugin stays out of the way: replies are drawn as usual.
+
+## Install
+
+```bash
+claude plugin marketplace add dazebug/latex-inline
+claude plugin install latex-inline@latex-inline
+```
+
+Start a new session, or run `/reload-plugins` in an open one. `/plugin` then lists `latex-inline` among the active mods, and `/latex-inline` shows whether it draws math in this terminal and which font it measured.
+
+## Writing math
+
+The plugin adds a short section to Claude's system prompt, only in sessions where it draws pictures, that asks Claude to write math this way, except in an answer to a side question (`/btw`): Claude Code shows that answer where no plugin can redraw it, so the section asks for the math there as Unicode text. Where it writes Unicode text it asks nothing, so Claude writes math as it otherwise would, and the LaTeX it does write is converted. You can write the same way in your own messages, and set `teach_claude` to `false` if you would rather instruct Claude yourself.
+
+- Inline math goes between single dollars: `$x^2$`. Put no space right after the opening `$` or right before the closing one, so `$20 and $30` stays text.
+- Display math goes between double dollars in a paragraph of its own, with blank lines before and after.
+- Math is drawn as pictures in paragraphs and list items. Math inside tables, headings and block quotes, where a picture can't go, is written as Unicode text. Math inside code spans and code blocks is left as written.
+- `\(...\)` and `\[...\]` work too. MathJax supports the AMS environments (`aligned`, `cases`, `pmatrix`, ...), and `\text{}` takes any script, including Hangul and kana.
+- Commands MathJax lacks are drawn too: `\argmax`, `\argmin`, `\E`, `\R` and the other blackboard letters, `\norm{}`, `\abs{}`, `\bm{}`, `\mathds{}`, `\1` and `\coloneqq` as usual, and any other unknown command, such as `\softplus`, as its name, the way `\operatorname` draws one.
+- `\texttip{part}{explanation}` and `\mathtip{part}{formula}` put an explanation on part of a formula, shown when the pointer rests on it (see [Tooltips](#tooltips)).
+
+If you turn `teach_claude` off, or want Claude to write LaTeX in every session regardless of the terminal, add this to your `CLAUDE.md`:
+
+```markdown
+- Write math in LaTeX: inline as `$...$`, display as `$$...$$` in a paragraph of its own with blank lines around it. No space right after the opening `$` or right before the closing `$`. Do not use Unicode symbols such as α, ² or ≤ in place of LaTeX. Keep formulas out of tables, headings, block quotes and code; put dollar amounts and shell variables in code spans. Move long formulas and stacked fractions to display math. Write the prose around math as Markdown, without LaTeX commands such as `\enquote{}`.
+```
+
+## Copying math
+
+In fullscreen mode (`"tui": "fullscreen"` in your settings), select part of a reply with the mouse and the copy holds each formula drawn as a picture as its LaTeX: `$...$` for inline math, `$$...$$` for display math. A paragraph the plugin wrapped onto several lines is copied as one line, as Claude Code copies the paragraphs it draws itself. A toast, "Copied with the formulas as LaTeX", says when it has happened.
+
+Claude Code makes that copy itself, from the characters on screen, and the cells of a picture hold placeholder characters, not the formula; no plugin can change the copy as it is made. So the plugin follows the selection, and once the clipboard holds exactly the text Claude Code copied from it, puts the same text on the clipboard with LaTeX in place of the pictures. To see that, it reads the clipboard every 200 ms for three seconds after the selection stops changing, then every second until a minute has passed. Anything else on the clipboard, such as what another program copied in the meantime, is left as it is. Set `copy_latex` to `false` to leave every copy as Claude Code makes it.
+
+This works for a selection inside one reply. A selection that spans several messages, and one your terminal makes itself (outside fullscreen mode, or the native selection you make by holding a modifier key), still copies the placeholders. `/copy` copies a whole reply with its LaTeX as Claude wrote it.
+
+## Tooltips
+
+MathJax's action extension puts an explanation on part of a formula: `\texttip{part}{explanation}` in words, `\mathtip{part}{formula}` as math. In a browser MathJax shows it while the pointer rests on the part. Here, in fullscreen mode, rest the pointer anywhere on the formula's picture and a card above it shows all of the formula's explanations, each beside the part it explains, a `\mathtip` formula drawn as a picture. An explanation of the whole formula stands alone in the card. The card moves left where it would pass the reply's right edge, and goes once the pointer leaves the formula.
+
+![A reply naming Euler's identity as the most beautiful equation. The pointer rests on the display formula e^(iπ) + 1 = 0, and a card above it says what e, i, π, 1 and 0 stand for; then it rests on e^(iθ) in the next sentence, and a card shows cos θ + i sin θ drawn as math](docs/tooltips.gif)
+
+*Ghostty with its default font (JetBrains Mono, 13pt); the reply's LaTeX puts `\texttip` on each constant of Euler's identity and `\mathtip` on e^(iθ).*
+
+The section the plugin adds to Claude's system prompt tells Claude how to write them, and to keep what the reader needs in the text, since the card shows in fullscreen mode only. To have Claude explain every symbol of a formula this way, ask for it: "explain each symbol with `\texttip`". Outside fullscreen mode, and in Unicode text, a formula shows its parts without the explanations. `/latex-inline` says whether tooltips show in the session.
+
+## Configuration
+
+Set options with `/plugin configure latex-inline@latex-inline` or in the `/config` panel. The values are yours alone: they are kept in your own settings, under `pluginConfigs`.
+
+| Option | Default | What it does |
+| :- | :- | :- |
+| `mode` | `auto` | `auto` draws pictures in Ghostty, cmux and kitty outside tmux, and writes Unicode text in other terminals. `on` always draws pictures, `text` always writes Unicode text, `off` leaves the LaTeX as written. |
+| `teach_claude` | `true` | Adds the math-writing section to the system prompt where the plugin draws pictures. |
+| `copy_latex` | `true` | Puts the formulas of a mouse copy on the clipboard as LaTeX, in fullscreen mode where the plugin draws pictures (see [Copying math](#copying-math)). |
+| `node_path` | `node` | The Node.js executable that runs the renderer. |
+| `font_metrics` | `auto` | `auto` measures your terminal font at session start (below). `manual` always uses the next three options. |
+| `cell_aspect` | `2.125` | Your terminal cell's height divided by its width, in pixels. |
+| `baseline` | `0.765` | Where the text baseline sits in a cell, as a fraction of the cell height from the top. |
+| `line_height` | `1.308` | The cell height in ems of your terminal font. |
+| `math_scale` | `1.62` | Inline formula size in ems of your terminal font. |
+| `display_scale` | `2.18` | Display formula size in ems of your terminal font. |
+| `color` | `auto` | Formula color: `auto` follows Claude Code's theme, or a `#rrggbb` color. |
+
+Inline formulas never shrink to fit a text row. A formula that is taller than a row, such as one with a fraction or a subscript under a superscript, takes three rows, and that line of text is spaced apart to make room.
+
+### Matching your terminal font
+
+The terminal stretches each picture to fill the cells it is given, so the plugin has to know the shape of a cell: its height over its width, where the text baseline sits in it, and how tall it is in ems of the font. Get these wrong and formulas look stretched or sit above or below the text.
+
+With `font_metrics` set to `auto`, the default, the plugin works them out at the start of each session:
+
+1. It finds the font your terminal is set to. For Ghostty and cmux that is the first `font-family` in `~/.config/ghostty/config` (or `config.ghostty`, and on macOS `~/Library/Application Support/com.mitchellh.ghostty/config`), with Ghostty's built-in JetBrains Mono when none is set. For kitty it is `font_family` in `~/.config/kitty/kitty.conf`.
+2. It finds that font's file in your font folders and reads its metrics: units per em, ascender, descender, line gap, and the widest advance among the printable ASCII characters.
+3. It sizes a cell the way Ghostty does: at your `font-size` (13pt by default on macOS, 12pt elsewhere) times the display scale, the cell is the widest ASCII advance by the font's line height, each rounded to whole pixels, with the font's box centered in it. For kitty it uses the font's unrounded proportions.
+
+Run `/latex-inline` to see the font it found and the numbers it uses. When it can't find the font, it falls back to the three options. Set `font_metrics` to `manual` and enter the numbers yourself when the measured cell is still off, which happens when:
+
+- your Ghostty config changes the cell with `adjust-cell-height`, `adjust-cell-width` or `adjust-font-baseline`, or sets the font with `config-file` includes or command-line flags,
+- you zoom the font in the terminal (cmd and plus or minus),
+- your display scale differs from the plugin's assumption: 2x on macOS, 1x on Linux.
+
+Measured values for common setups:
+
+| Terminal font | `cell_aspect` | `baseline` | `line_height` |
+| :- | :- | :- | :- |
+| JetBrains Mono 13pt (Ghostty default), any display | 2.125 | 0.765 | 1.308 |
+| Fira Code 12pt, Retina display | 2.0 | 0.767 | 1.25 |
+
+To work the numbers out by hand for another font, take its units per em `u`, ascender `a`, descender `d` (negative), line gap `g` and widest ASCII advance `w` from a font tool, and your font size in points `s` times your display scale. With `p = s × scale / u`:
+
+- cell width `W = round(w × p)` and cell height `H = round((a − d + g) × p)` pixels
+- baseline from the bottom `B = round((g / 2 − d) × p − (H − (a − d + g) × p) / 2)` pixels
+- `cell_aspect = H / W`, `baseline = (H − B) / H`, `line_height = H / (s × scale)`
+
+## Unicode text
+
+Where pictures can't be shown, each formula is converted to plain text that a terminal font can draw:
+
+- Symbols become their characters: `\alpha` is α, `\le` is ≤, `\mathbb{R}` is ℝ, `\mathcal{L}` is ℒ, `\hat{y}` is ŷ.
+- Superscripts and subscripts use Unicode's small letters where it has them all, as in x², θ⁽ᵗ⁺¹⁾ and ∑ᵢ₌₁ⁿ. Where it doesn't, they are written after `^` or `_`, as in e^(iπ) and 𝔼_(x∼p).
+- Fractions and roots go on one line, with parentheses where needed: `\frac{1}{1+e^{-x}}` is 1/(1 + e⁻ˣ), `\sqrt{x+1}` is √(x + 1).
+- Spacing follows TeX: binary operators and relations get a space on each side, a leading sign does not.
+- A formula alone in its paragraph is centered.
+- A tooltip (`\texttip`, `\mathtip`) shows only the part it explains.
+
+The result is an approximation: tall structures such as matrices, `cases` and multi-line `aligned` blocks come out on one line, with rows separated by semicolons. A command it doesn't know is shown as written.
+
+## Privacy
+
+LaTeX Inline collects no data and sends nothing off your machine: it has no server and makes no network requests. Formulas are rendered by a local `node` process and kept as pictures in your cache folder. It reads the clipboard only to compare it with a selection you made, and keeps none of it. Everything it runs, reads and writes is listed below.
+
+## What it runs, reads and writes
+
+- **Runs**: where it draws pictures, `node bin/font-metrics.mjs` once at session start when `font_metrics` is `auto`, and `node bin/render.mjs` from the plugin folder once per batch of new formulas, with the formulas on its standard input. The renderer lays each formula out with MathJax and rasterizes it to PNG with [resvg](https://github.com/RazrFalcon/resvg). Both start through Claude Code's `$.process.run`, as an argument list with no shell, with the `node` that `node_path` names; the font check is stopped after 10 seconds and a render after 60. They run as a separate `node` process because Claude Code runs the hooks module itself with no Node.js APIs or WebAssembly and lets it import only its own files, so the npm packages that draw the pictures cannot load there. Unless `copy_latex` is off, after you select part of a reply drawn with pictures it also runs `pbpaste` (on Linux the first of `wl-paste`, `xclip` and `xsel` that runs) to read the clipboard, as [Copying math](#copying-math) describes, stopped after 2 seconds. Nothing else is run.
+- **Writes**: the PNG pictures and a small JSON record per formula in `$XDG_CACHE_HOME/latex-inline` (`~/.cache/latex-inline` by default). Delete that folder at any time to clear the cache. Through Claude Code's `$.ui.copy`, the clipboard: a selection's text with its formulas as LaTeX, in place of the copy Claude Code has just made of that selection.
+- **Reads**: those cache files; your terminal's config file (`~/.config/ghostty/config` and its macOS and `.ghostty` variants, or `~/.config/kitty/kitty.conf`); the headers of the font files in your font folders, to find and measure the terminal font; your environment's `TERM`, `TERM_PROGRAM`, `KITTY_WINDOW_ID`, `TMUX`, `HOME`, `XDG_CACHE_HOME` and `XDG_CONFIG_HOME`; Claude Code's `theme` setting; what you select with the mouse, through Claude Code's `$.ui.selection`, and the clipboard, while a selection of a reply drawn with pictures stands, for up to a minute; and, only for characters the math font has no glyph for, one CJK system font for text inside `\text{}` and one math font (STIX Two Math on macOS, Noto Sans Math on Linux) for letters such as the 𝟙 of `\mathbb{1}`.
+- **Network**: none at run time. Claude Code downloads the npm packages pinned in `package-lock.json` (`mathjax`, `@mathjax/mathjax-fira-font`, `@resvg/resvg-js`) when it installs the plugin.
+- **Sends**: nothing leaves your machine. The formulas go to the local `node` renderer on its standard input, and the pictures come back as files in the cache folder.
+- **Credentials**: none are read.
+- **Hooks**: `session.start` works out how this terminal shows math, measures the font for pictures, registers `/latex-inline` and, where it draws pictures, starts a 200 ms timer that renders new formulas and follows the mouse selection; `command.run` answers `/latex-inline`; `prompt.compose` adds the math-writing section described above; `ui.render`, on assistant messages only, draws the math and the prose itself and passes only the fenced code blocks that start a line on to the next hook, so mods such as Mermaid Inline can draw them; indented fences stay with the prose. A reply with no math to draw, and every reply where it writes Unicode text, goes on whole, with its math written as Unicode text. It leaves the stored message as it was.
+- **Changes to Claude**: the math-writing section in the system prompt described above, only where the plugin draws pictures, and the `/latex-inline` command. The Unicode text is computed in the plugin itself and runs nothing.
+
+## When a formula can't be drawn
+
+- A formula MathJax can't parse shows its LaTeX source, dimmed, in its place. The rest of the reply is still drawn. An unknown command alone doesn't stop a formula: it is drawn as its name.
+- If the renderer can't run at all (no `node`, missing packages), every formula shows its source dimmed, and the plugin tries again in the next session.
+- If a reply with math holds a single block of text, other than a fenced code block that starts a line, longer than 10,000 characters, the whole reply is written as Unicode text.
+- While a new formula renders, its source shows for a moment and is then replaced.
+
+## Limitations
+
+- A selection that spans several messages, or one your terminal makes itself, copies the picture placeholders, not the LaTeX (see [Copying math](#copying-math)). Math written as Unicode text copies as that text.
+- Claude's thinking, shown with ctrl+o, keeps its LaTeX as written: Claude Code gives mods no way to redraw it.
+- An answer to a side question (`/btw`) is not drawn either, for the same reason; where the plugin draws pictures it asks Claude to write the math there as Unicode text.
+- Inline code, bold text and links in a paragraph that holds math are drawn by the plugin, close to but not exactly like Claude Code's own drawing.
+- Where Claude Code puts a header above each message, as in the ctrl+o transcript view, a reply that holds math can have a blank row too many under the header and none above a code block in it: Claude Code leaves those rows out there, and a plugin cannot tell that view from the normal one.
+
+## Troubleshooting
+
+Run `/latex-inline` first: it says whether the plugin draws pictures or writes Unicode text in this terminal and, for pictures, which font it measured and the cell it uses. For more, start Claude Code with `claude --debug` and search the debug log for `latex-inline`. A line ending in `not loaded:` says why the mod did not load, and a `ui.render (AssistantMessage) refused` line names a drawing Claude Code rejected.
+
+## Development
+
+Load your clone for one session with `claude --plugin-dir ./latex-inline`; Claude Code doesn't install the packages for a plugin loaded in place, so run `npm ci --ignore-scripts` in the clone first. `claude plugin test` runs the parser, converter and hook tests, and `node --test tests/font-metrics.test.mjs` the font measuring tests.
+
+## Acknowledgements
+
+- The cache file names come from [cyrb53](https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js), bryc's public-domain string hash.
+- The terminal cell is measured the way [Ghostty](https://github.com/ghostty-org/ghostty) (MIT) computes it in `src/font/Metrics.zig`.
+- Formulas are laid out by [MathJax](https://www.mathjax.org/) in the [Fira Math](https://github.com/firamath/firamath) font and rasterized by [resvg](https://github.com/RazrFalcon/resvg).
+
+## License
+
+MIT, see [LICENSE](LICENSE). The renderer's packages, installed from npm, keep their own licenses: MathJax and its fonts (Apache-2.0, with the Fira fonts under the SIL Open Font License) and resvg-js (MPL-2.0).
